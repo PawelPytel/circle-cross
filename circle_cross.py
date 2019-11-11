@@ -9,7 +9,7 @@ from skimage import measure
 from skimage.transform import resize
 import numpy as np
 
-img = io.imread('images/img0.jpg')
+img = io.imread('images/photo01.jpg')
 result = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 img = rgb2gray(img)
 img **= 3
