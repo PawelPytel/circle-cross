@@ -75,3 +75,29 @@ print(len(final_list))
 for a in final_list:
     io.imshow(a, cmap=plt.cm.gray)
     io.show()
+
+
+
+
+
+def to_square(photo):
+    max_size = max(photo.shape)
+    new_photo = 1 - np.zeros((max_size, max_size))
+    new_photo[:photo.shape[0], :photo.shape[1]] = photo
+    return new_photo
+
+
+def find_line(photo_square, angle):
+    size = photo_square.shape[0]
+    tangens = round(math.tan(math.radians(angle)), 2)
+    max_val = 0
+    for k in range(size):
+        suma = 0
+        for y in range(size):
+            for x in range(size):
+                if x != k:
+                    if tangens == round((y-k)/(x-k), 2) and photo_square[y][x] == 0:
+                        suma += 1
+        if suma > max_val:
+            max_val = suma
+    return max_val
