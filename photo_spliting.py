@@ -39,6 +39,15 @@ def cut(img, tag, color):
     return img
 
 
+def find_white_line(photo):
+    photo = big2small(photo)
+    max_value = 0
+    for row in photo:
+        if sum(row) > max_value:
+            max_value = sum(row)
+    return max_value / len(photo[0])
+
+
 def photo_div(photo):
     for p in range(len(photo)):
         if 0 not in photo[p]:
@@ -101,3 +110,22 @@ def find_line(photo_square, angle):
         if suma > max_val:
             max_val = suma
     return max_val
+
+
+def rotate(photo):
+    for i in range(360):
+        photo = skimage.transform.rotate(photo, 1)
+        # photo = thresh(0.5, photo)
+        if find_white_line(photo) > 0.65:
+            break
+        io.imshow(photo, cmap=plt.cm.gray)
+        io.show()
+    return photo
+
+# ta funckcja musi być, bo przy obracaniu obcinają się boki i dzięki powiększeniu obrazu plansza zostaje w całości
+def make_big_square(photo):
+    max_size = max(photo.shape)
+    new_photo = 1 - np.zeros((int(1.4 * max_size) + 1, int(1.4 * max_size) + 1))
+    sp = int(0.2 * max_size)
+    new_photo[sp:sp+photo.shape[0], sp:sp+photo.shape[1]] = photo
+    return new_photo
