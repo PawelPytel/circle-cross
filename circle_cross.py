@@ -122,6 +122,20 @@ def find_crosses(img, square_range):
     return img
 
 
+def find_circle(img, top_left, top_right, bottom_left, bottom_right):
+    size_x = int(((top_right[1] - top_left[1]) + (bottom_right[1] - bottom_left[1])) / 2)
+    size_y = int(((bottom_left[0] - top_left[0]) + (bottom_right[0] - top_right[0])) / 2)
+    percent_x = int(0.1 * size_x)
+    percent_y = int(0.1 * size_y)
+    new_img = img[top_left[0] + percent_y:bottom_left[0] - percent_y, top_left[1] + percent_x:top_right[1] - percent_x]
+    new_img = new_img / 255
+    sum_white = 0
+    for row in new_img:
+        sum_white += sum(row)
+    img_size = new_img.shape[0] * new_img.shape[1]
+    return sum_white / img_size
+
+
 def mark_points(img,top_left, top_right, bottom_left, bottom_right):
     img[top_left[0], top_left[1]] = 75
     img[top_right[0], top_right[1]] = 75
@@ -130,62 +144,66 @@ def mark_points(img,top_left, top_right, bottom_left, bottom_right):
     return img
 
 
-def find_result(img, top_left, top_right, bottom_left, bottom_right):
+def find_result(img, top_left, top_right, bottom_left, bottom_right, circle_percent):
     img[top_left[1],top_left[0]]=75
     result = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    x1 = int((top_left[1]+bottom_left[1])/2)
+    x2 = int((top_right[1]+bottom_right[1])/2)
+    y1 = int((top_right[0]+top_left[0])/2)
+    y2 = int((bottom_right[0]+bottom_left[0])/2)
+
     if (img[0:top_left[0], 0:top_left[1]] == 50).any():
         result[0][0] = 'X'
-    elif (img[0:top_left[0], 0:top_left[1]] == 255).any():
+    elif find_circle(img, [0,0], [0,x1], [y1,0], top_left) > circle_percent:
         result[0][0] = 'O'
     else:
         result[0][0] = ' '
     if (img[0:min(top_left[0], top_right[0]), top_left[1]:top_right[1]] == 50).any():
         result[0][1] = 'X'
-    elif (img[0:min(top_left[0], top_right[0]), top_left[1]:top_right[1]] == 255).any():
+    elif find_circle(img, [0,x1], [0, x2], top_left, top_right) > circle_percent:
         result[0][1] = 'O'
     else:
         result[0][1] = ' '
     if (img[:top_right[0], top_right[1]:] == 50).any():
         result[0][2] = 'X'
-    elif (img[:top_right[0], top_right[1]:] == 255).any():
+    elif find_circle(img, [0, x2], [0, img.shape[1]], top_right, [y1, img.shape[1]]) > circle_percent:
         result[0][2] = 'O'
     else:
         result[0][2] = ' '
     if (img[top_left[0]:bottom_left[0], 0:top_left[1]] == 50).any():
         result[1][0] = 'X'
-    elif (img[top_left[0]:bottom_left[0], 0:top_left[1]] == 255).any():
+    elif find_circle(img, [y1,0], top_left, [y2,0], bottom_left) > circle_percent:
         result[1][0] = 'O'
     else:
         result[1][0] = ' '
     if ((img[max(top_left[0], top_right[0]):min(bottom_left[0], bottom_right[0]),
          max(top_left[1], bottom_left[1]):min(top_right[1], bottom_right[1])] == 50).any()):
         result[1][1] = 'X'
-    elif ((img[max(top_left[0], top_right[0]):min(bottom_left[0], bottom_right[0]),
-           max(top_left[1], bottom_left[1]):min(top_right[1], bottom_right[1])] == 255).any()):
+    elif find_circle(img, top_left, top_right, bottom_left, bottom_right) > circle_percent:
         result[1][1] = 'O'
     else:
         result[1][1] = ' '
     if (img[top_right[0]:bottom_right[0], max(bottom_right[1], top_right[1]):] == 50).any():
         result[1][2] = 'X'
-    elif (img[top_right[0]:bottom_right[0], max(bottom_right[1], top_right[1]):] == 255).any():
+    elif find_circle(img, top_right, [y1, img.shape[1]], bottom_right, [y2, img.shape[1]]) > circle_percent:
         result[1][2] = 'O'
     else:
         result[1][2] = ' '
     if (img[bottom_left[0]:, 0:bottom_left[1]] == 50).any():
         result[2][0] = 'X'
-    elif (img[bottom_left[0]:, 0:bottom_left[1]] == 255).any():
+    elif find_circle(img, [y2,0], bottom_left, [img.shape[0],0], [img.shape[0],x1]) > circle_percent:
         result[2][0] = 'O'
     else:
         result[2][0] = ' '
     if (img[max(bottom_left[0], bottom_right[0]):, bottom_left[1]:bottom_right[1]] == 50).any():
         result[2][1] = 'X'
-    elif (img[max(bottom_left[0], bottom_right[0]):, bottom_left[1]:bottom_right[1]] == 255).any():
+    elif find_circle(img, bottom_left, bottom_right, [img.shape[0], x1], [img.shape[0], x2]) > circle_percent:
         result[2][1] = 'O'
     else:
         result[2][1] = ' '
     if (img[bottom_right[0]:, bottom_right[1]:] == 50).any():
         result[2][2] = 'X'
-    elif (img[bottom_right[0]:, bottom_right[1]:] == 255).any():
+    elif find_circle(img, bottom_right, [y2, img.shape[1]], [img.shape[0], x2], [img.shape[0], img.shape[1]]) > circle_percent:
         result[2][2] = 'O'
     else:
         result[2][2] = ' '
@@ -248,12 +266,12 @@ for i in images:
 
     top_left, top_right, bottom_left, bottom_right = find_board(i, 10)
     i = find_crosses(i, 10)
-
+    # show_img(find_circle(i, top_left, top_right, bottom_left, bottom_right))
     i = fill_board(i, top_right)
-    i=mark_points(i,top_left, top_right, bottom_left, bottom_right)
+    i = mark_points(i, top_left, top_right, bottom_left, bottom_right)
     show_img(i)
     # print(top_left, top_right, bottom_left, bottom_right)
     print("\nplansza numer:", no)
-    result = find_result(i, top_left, top_right, bottom_left, bottom_right)
+    result = find_result(i, top_left, top_right, bottom_left, bottom_right, 0.1)
     print_result(result)
     no += 1
