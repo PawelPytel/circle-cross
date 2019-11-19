@@ -4,9 +4,11 @@ from skimage import data, io, filters, exposure
 from skimage.color import rgb2hsv, hsv2rgb, rgb2gray
 import skimage.morphology as mp
 from skimage.transform import resize
+from skimage.segmentation import flood_fill
 import numpy as np
 import photo_spliting as ps
 import math
+import warnings
 
 
 def load_file(path):
@@ -14,6 +16,7 @@ def load_file(path):
 
 
 def black_white(img):
+    warnings.simplefilter("ignore")
     img = rgb2gray(img)
     img **= 3
     img = (img <= 0.04) * 1
@@ -119,7 +122,16 @@ def find_crosses(img, square_range):
     return img
 
 
+def mark_points(img,top_left, top_right, bottom_left, bottom_right):
+    img[top_left[0], top_left[1]] = 75
+    img[top_right[0], top_right[1]] = 75
+    img[bottom_right[0], bottom_right[1]] = 75
+    img[bottom_left[0], bottom_left[1]] = 75
+    return img
+
+
 def find_result(img, top_left, top_right, bottom_left, bottom_right):
+    img[top_left[1],top_left[0]]=75
     result = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     if (img[0:top_left[0], 0:top_left[1]] == 50).any():
         result[0][0] = 'X'
@@ -226,18 +238,22 @@ bottom_right = []
 bottom_left = []
 images = []
 result = []
-img = load_file('images/photo02.jpg')
+img = load_file('images/photo01.jpg')
 img = black_white(img)
 img = cut_min(img)
 images = ps.photo_division(img)
+no = 1
 for i in images:
     i = rotate(i)
 
-    top_left, top_right, bottom_left, bottom_right = find_board(i, 20)
+    top_left, top_right, bottom_left, bottom_right = find_board(i, 10)
     i = find_crosses(i, 10)
 
     i = fill_board(i, top_right)
+    i=mark_points(i,top_left, top_right, bottom_left, bottom_right)
     show_img(i)
-    print(top_left, top_right, bottom_left, bottom_right)
+    # print(top_left, top_right, bottom_left, bottom_right)
+    print("\nplansza numer:", no)
     result = find_result(i, top_left, top_right, bottom_left, bottom_right)
     print_result(result)
+    no += 1
