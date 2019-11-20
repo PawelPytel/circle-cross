@@ -227,7 +227,8 @@ def show_img(img):
 
 
 def rotate(rot):
-    corners = ski.transform.probabilistic_hough_line(rot)
+    corners = ski.transform.probabilistic_hough_line(rot,line_length=int(2 / 3 * min(rot.shape[0], rot.shape[1])),
+                                                         line_gap=1)
     line = corners[0]
     c = np.array([line[0][0], line[1][1]])
     len1 = np.linalg.norm(c - np.array(line[0]))
@@ -255,17 +256,17 @@ def rotate(rot):
     return rot
 
 
-top_right = []
-top_left = []
-bottom_right = []
-bottom_left = []
-images = []
-result = []
-img = load_file('images/photo01.jpg')
-img = black_white(img)
-img = cut_min(img)
-images = ps.photo_division(img)
-no = 1
+# top_right = []
+# top_left = []
+# bottom_right = []
+# bottom_left = []
+# images = []
+# result = []
+# img = load_file('images/photo01.jpg')
+# img = black_white(img)
+# img = cut_min(img)
+# images = ps.photo_division(img)
+# no = 1
 # for i in images:
 #     i = rotate(i)
 #     contours = ski.measure.find_contours(i, 1)
