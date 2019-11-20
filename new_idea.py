@@ -34,25 +34,25 @@ def find_result2(img, top_left, top_right, bottom_left, bottom_right):
 
     if (len(np.unique(img[0:top_left[0], 0:top_left[1]]) )== 3):
         result[0][0] = 'X'
-    elif (len(np.unique(img[0:top_left[0], 0:top_left[1]]) )==4):
+    elif (len(np.unique(img[0:top_left[0], 0:top_left[1]]) )>=4):
         result[0][0] = 'O'
     else:
         result[0][0] = ' '
     if(len(np.unique(img[0:min(top_left[0], top_right[0]), top_left[1]:top_right[1]])) ==3):
         result[0][1] = 'X'
-    elif(len(np.unique(img[0:min(top_left[0], top_right[0]), top_left[1]:top_right[1]]) )==4):
+    elif(len(np.unique(img[0:min(top_left[0], top_right[0]), top_left[1]:top_right[1]]) )>=4):
         result[0][1] = 'O'
     else:
         result[0][1] = ' '
     if(len(np.unique(img[:top_right[0], top_right[1]:]) )==3):
         result[0][2] = 'X'
-    elif(len(np.unique(img[:top_right[0], top_right[1]:]) )==4):
+    elif(len(np.unique(img[:top_right[0], top_right[1]:]) )>=4):
         result[0][2] = 'O'
     else:
         result[0][2] = ' '
     if(len(np.unique(img[top_left[0]:bottom_left[0], 0:top_left[1]]) )==3):
         result[1][0] = 'X'
-    elif(len(np.unique(img[top_left[0]:bottom_left[0], 0:top_left[1]]) )==4):
+    elif(len(np.unique(img[top_left[0]:bottom_left[0], 0:top_left[1]]) )>=4):
         result[1][0] = 'O'
     else:
         result[1][0] = ' '
@@ -60,31 +60,31 @@ def find_result2(img, top_left, top_right, bottom_left, bottom_right):
          max(top_left[1], bottom_left[1]):min(top_right[1], bottom_right[1])])))==3):
         result[1][1] = 'X'
     elif((len(np.unique(img[max(top_left[0], top_right[0]):min(bottom_left[0], bottom_right[0]),
-         max(top_left[1], bottom_left[1]):min(top_right[1], bottom_right[1])])))==4):
+         max(top_left[1], bottom_left[1]):min(top_right[1], bottom_right[1])])))>=4):
         result[1][1] = 'O'
     else:
         result[1][1] = ' '
     if(len(np.unique(img[top_right[0]:bottom_right[0], max(bottom_right[1], top_right[1]):])) ==3):
         result[1][2] = 'X'
-    elif(len(np.unique(img[top_right[0]:bottom_right[0], max(bottom_right[1], top_right[1]):]) )==4):
+    elif(len(np.unique(img[top_right[0]:bottom_right[0], max(bottom_right[1], top_right[1]):]) )>=4):
         result[1][2] = 'O'
     else:
         result[1][2] = ' '
     if(len(np.unique(img[bottom_left[0]:, 0:bottom_left[1]]) )==3):
         result[2][0] = 'X'
-    elif(len(np.unique(img[bottom_left[0]:, 0:bottom_left[1]]) )==4):
+    elif(len(np.unique(img[bottom_left[0]:, 0:bottom_left[1]]) )>=4):
         result[2][0] = 'O'
     else:
         result[2][0] = ' '
     if(len(np.unique(img[max(bottom_left[0], bottom_right[0]):, bottom_left[1]:bottom_right[1]]) )==3):
         result[2][1] = 'X'
-    elif(len(np.unique(img[max(bottom_left[0], bottom_right[0]):, bottom_left[1]:bottom_right[1]])) ==4):
+    elif(len(np.unique(img[max(bottom_left[0], bottom_right[0]):, bottom_left[1]:bottom_right[1]])) >=4):
         result[2][1] = 'O'
     else:
         result[2][1] = ' '
     if(len(np.unique(img[bottom_right[0]:, bottom_right[1]:]) )==3):
         result[2][2] = 'X'
-    elif(len(np.unique(img[bottom_right[0]:, bottom_right[1]:]) )==4):
+    elif(len(np.unique(img[bottom_right[0]:, bottom_right[1]:]) )>=4):
         result[2][2] = 'O'
     else:
         result[2][2] = ' '
