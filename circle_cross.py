@@ -57,19 +57,21 @@ def cut_min(img):
 
 def find_board(img, square_range):
     spots = []
-    for i in range(0, img.shape[0] - square_range):
-        for j in range(0, img.shape[1] - square_range):
-            square = np.array(img[i:i + square_range, j:j + square_range])
-            if (square[0, 0] == 0
-                    and square[0, -1] == 0
-                    and square[-1, 0] == 0
-                    and square[-1, -1] == 0
-                    and not all(square[0, :] == 0)
-                    and not all(square[-1, :] == 0)
-                    and not all(square[:, 0] == 0)
-                    and not all(square[:, -1] == 0)
-                    and square[square_range // 2, square_range // 2] == 255):
-                spots.append([i + square_range // 2, j + square_range // 2])
+    while len(spots)<4:
+        for i in range(0, img.shape[0] - square_range):
+            for j in range(0, img.shape[1] - square_range):
+                square = np.array(img[i:i + square_range, j:j + square_range])
+                if (square[0, 0] == 0
+                        and square[0, -1] == 0
+                        and square[-1, 0] == 0
+                        and square[-1, -1] == 0
+                        and not all(square[0, :] == 0)
+                        and not all(square[-1, :] == 0)
+                        and not all(square[:, 0] == 0)
+                        and not all(square[:, -1] == 0)
+                        and square[square_range // 2, square_range // 2] == 255):
+                    spots.append([i + square_range // 2, j + square_range // 2])
+        square_range+=1
     # for i in spots:
     #     img[i[0], i[1]] = 125
     top_right = []
@@ -96,26 +98,28 @@ def find_board(img, square_range):
     return top_left, top_right, bottom_left, bottom_right
 
 
-def fill_board(img, top_right):
-    img = ski.segmentation.flood_fill(img, (top_right[0], top_right[1]), 125)
+def fill_board(img, top_right,color=125):
+    img = ski.segmentation.flood_fill(img, (top_right[1], top_right[0]), color)
     return img
 
 
 def find_crosses(img, square_range):
     spot2 = []
-    for i in range(0, img.shape[0] - square_range):
-        for j in range(0, img.shape[1] - square_range):
-            square = np.array(img[i:i + square_range, j:j + square_range])
-            if (square[0, 0] == 255
-                    and square[0, -1] == 255
-                    and square[-1, 0] == 255
-                    and square[-1, -1] == 255
-                    and not all(square[0, :] == 255)
-                    and not all(square[-1, :] == 255)
-                    and not all(square[:, 0] == 255)
-                    and not all(square[:, -1] == 255)
-                    and square[square_range // 2, square_range // 2] == 255):
-                spot2.append([i + square_range // 2, j + square_range // 2])
+    while len(spot2)==0:
+        for i in range(0, img.shape[0] - square_range):
+            for j in range(0, img.shape[1] - square_range):
+                square = np.array(img[i:i + square_range, j:j + square_range])
+                if (square[0, 0] == 255
+                        and square[0, -1] == 255
+                        and square[-1, 0] == 255
+                        and square[-1, -1] == 255
+                        and square[square_range-1, square_range // 2] == 0
+                        and square[square_range // 2, square_range-1] == 0
+                        and square[square_range // 2, 0] == 0
+                        and square[0, square_range // 2] == 0
+                        and square[square_range // 2, square_range // 2] == 0):
+                    spot2.append([i + square_range // 2, j + square_range // 2])
+        square_range+=1
 
     for i in spot2:
         img[i[0], i[1]] = 50
@@ -137,10 +141,10 @@ def find_circle(img, top_left, top_right, bottom_left, bottom_right):
 
 
 def mark_points(img,top_left, top_right, bottom_left, bottom_right):
-    img[top_left[0], top_left[1]] = 75
-    img[top_right[0], top_right[1]] = 75
-    img[bottom_right[0], bottom_right[1]] = 75
-    img[bottom_left[0], bottom_left[1]] = 75
+    img[top_left[0], top_left[1]] = 175
+    img[top_right[0], top_right[1]] = 175
+    img[bottom_right[0], bottom_right[1]] = 175
+    img[bottom_left[0], bottom_left[1]] = 175
     return img
 
 
@@ -216,15 +220,15 @@ def print_result(result):
 
 
 def show_img(img):
+    fig, ax = plt.subplots()
     plt.grid(True)
-    io.imshow(img, cmap=plt.cm.gray)
-    io.show()
+    ax.imshow(img, cmap=plt.cm.gray)
+    return ax
 
 
 def rotate(rot):
     corners = ski.transform.probabilistic_hough_line(rot)
     line = corners[0]
-    rot[line[1][1], line[1][0]] = 125
     c = np.array([line[0][0], line[1][1]])
     len1 = np.linalg.norm(c - np.array(line[0]))
     len2 = np.linalg.norm(c - np.array(line[1]))
@@ -247,6 +251,7 @@ def rotate(rot):
         rot = cut_min(rot)
         rot = (rot >= 1) * 255
         rot = mp.dilation(mp.erosion(rot))
+
     return rot
 
 
@@ -261,17 +266,22 @@ img = black_white(img)
 img = cut_min(img)
 images = ps.photo_division(img)
 no = 1
-for i in images:
-    i = rotate(i)
-
-    top_left, top_right, bottom_left, bottom_right = find_board(i, 10)
-    i = find_crosses(i, 10)
-    # show_img(find_circle(i, top_left, top_right, bottom_left, bottom_right))
-    i = fill_board(i, top_right)
-    i = mark_points(i, top_left, top_right, bottom_left, bottom_right)
-    show_img(i)
-    # print(top_left, top_right, bottom_left, bottom_right)
-    print("\nplansza numer:", no)
-    result = find_result(i, top_left, top_right, bottom_left, bottom_right, 0.1)
-    print_result(result)
-    no += 1
+# for i in images:
+#     i = rotate(i)
+#     contours = ski.measure.find_contours(i, 1)
+#     square_line=min(i.shape[0],i.shape[1])//20
+#     top_left, top_right, bottom_left, bottom_right = find_board(i, square_line)
+#     i = find_crosses(i, 10)
+#     # show_img(find_circle(i, top_left, top_right, bottom_left, bottom_right))
+#
+#     #i = mark_points(i, top_left, top_right, bottom_left, bottom_right)
+#     for n, contour in enumerate(contours):
+#         plt.plot(contour[:, 1], contour[:, 0], linewidth=2)
+#     i = fill_board(i, top_right)
+#     i=mp.dilation(i)
+#     show_img(i)
+#     # print(top_left, top_right, bottom_left, bottom_right)
+#     print("\nplansza numer:", no)
+#     result = find_result(i, top_left, top_right, bottom_left, bottom_right, 0.1)
+#     print_result(result)
+#     no += 1
